@@ -3,6 +3,7 @@ package com.example.listadecompras;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity {
@@ -13,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         criarBancoDados();
+        inserirProdutos();
     }
 
     public void criarBancoDados() {
@@ -41,6 +43,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void inserirProdutos() {
+        try {
+            bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
 
+            String sql = "INSERT INTO produto (nome, valor) VALUES(?, ?)";
+            SQLiteStatement stmt = bancoDados.compileStatement(sql);
+
+            stmt.bindString(1, "Arroz 1 Kg");
+            stmt.bindDouble(2, 2.69);
+            stmt.executeInsert();
+
+            stmt.bindString(1, "Leite curta vida");
+            stmt.bindDouble(2, 2.70);
+            stmt.executeInsert();
+
+            stmt.bindString(1, "Carne Freeboi");
+            stmt.bindDouble(2, 16.70);
+            stmt.executeInsert();
+
+            stmt.bindString(1, "Feiajo carioquinha");
+            stmt.bindDouble(2, 3.38);
+            stmt.executeInsert();
+
+            stmt.bindString(1, "Coca-Cola");
+            stmt.bindDouble(2, 3.00);
+            stmt.executeInsert();
+
+            bancoDados.close();
+
+        } catch (Exception e) {
+
+        }
     }
 }
