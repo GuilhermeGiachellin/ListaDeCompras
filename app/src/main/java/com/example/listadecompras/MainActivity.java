@@ -2,19 +2,29 @@ package com.example.listadecompras;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase bancoDados;
+    private ListView listViewListas;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        listViewListas = (ListView) findViewById(R.id.listViewListas);
+
         criarBancoDados();
-        inserirProdutos();
+        //inserirProdutos();
+        listarListas();
     }
 
     public void criarBancoDados() {
@@ -38,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                     ");");
             bancoDados.close();
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -72,7 +82,36 @@ public class MainActivity extends AppCompatActivity {
             bancoDados.close();
 
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void listarListas() {
+        try {
+            bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
+            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
+            ArrayList<String> linhasDados = new ArrayList<String>();
+
+            ArrayAdapter adapterDados = new ArrayAdapter<String>(
+                this,
+                    android.R.layout.simple_list_item_1,
+                    android.R.id.text1,
+                    linhasDados
+            );
+
+            listViewListas.setAdapter(adapterDados);
+            meuCursor.moveToFirst();
+            while(meuCursor != null) {
+                linhasDados.add(meuCursor.getString(1));
+                meuCursor.moveToNext();
+            }
+
+        } catch (Exception e) {
 
         }
+    }
+
+    public void novaListaButton() {
+        startActivity(new Intent(this, ListaCompras.class));
     }
 }
