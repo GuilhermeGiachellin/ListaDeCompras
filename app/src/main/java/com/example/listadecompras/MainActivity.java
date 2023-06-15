@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -105,13 +106,12 @@ public class MainActivity extends AppCompatActivity {
                 linhasDados.add(meuCursor.getString(1));
                 meuCursor.moveToNext();
             }
-
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
-    public void novaListaButton() {
+    public void novaListaButton(View v) {
         startActivity(new Intent(this, ListaCompras.class));
     }
 }
