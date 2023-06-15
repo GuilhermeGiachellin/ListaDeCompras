@@ -23,6 +23,7 @@ public class ListaCompras extends AppCompatActivity {
     private ListView listViewProdutos;
     private EditText editTextNomeLista;
     private String produtoSelecionado;
+    private long produtoId, listaId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +53,7 @@ public class ListaCompras extends AppCompatActivity {
         } else {
             try {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-                long produtoId, listaId;
+
 
                 String sql = "INSERT INTO lista (nome, data) VALUES(?, ?)";
                 SQLiteStatement stmt = bancoDados.compileStatement(sql);
@@ -111,8 +112,15 @@ public class ListaCompras extends AppCompatActivity {
 
     public void salvarListaButton(View v) {
         adcionarNovaLista();
+        Uteis.Alert(this,"LISTA SALVA");
+        limparCampos();
         startActivity(new Intent(this, MainActivity.class));
 
+    }
+
+    public void limparCampos() {
+        produtoSelecionado = "";
+        editTextNomeLista.setText(null);
     }
 
 }
