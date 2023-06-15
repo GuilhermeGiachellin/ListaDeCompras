@@ -2,10 +2,14 @@ package com.example.listadecompras;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -18,6 +22,7 @@ public class ListaCompras extends AppCompatActivity {
     private SQLiteDatabase bancoDados;
     private ListView listViewProdutos;
     private EditText editTextNomeLista;
+    private String produtoSelecionado;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,22 +32,51 @@ public class ListaCompras extends AppCompatActivity {
         editTextNomeLista = (EditText) this.findViewById(R.id.editTextNomeLista);
 
         listarProdutos();
+
+        listViewProdutos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                produtoSelecionado = (String) (listViewProdutos.getItemAtPosition(position));
+            }
+        });
     }
 
     public void adcionarNovaLista() {
         if(editTextNomeLista.getText().toString().trim().equals("")) {
             Uteis.Alert(this, "Nome da lista é obrigatório");
             editTextNomeLista.requestFocus();
+
+        } else if(produtoSelecionado.isEmpty()) {
+            Uteis.Alert(this, "Selecione um produto");
+
         } else {
             try {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
+                long produtoId, listaId;
 
                 String sql = "INSERT INTO lista (nome, data) VALUES(?, ?)";
                 SQLiteStatement stmt = bancoDados.compileStatement(sql);
 
                 stmt.bindString(1, editTextNomeLista.getText().toString());
                 stmt.bindString(2, String.valueOf(Calendar.getInstance().getTime()));
+                //EXECUTA INSERT E PEGA A ID DA NOVA LISTA
+                listaId = stmt.executeInsert();
+
+                sql = "SELECT id FROM produto WHERE nome = ?";
+                stmt = bancoDados.compileStatement(sql);
+                stmt.bindString(1, produtoSelecionado);
+                //PEGA A ID DO PRODUTO SELECIONADO
+                produtoId = stmt.executeInsert();
+
+                //INSERE NA TABELA DE LIGACAO
+                sql = "INSERT INTO listaComprasProdutos (produto_id, lista_id) VALUES(?, ?)";
+                stmt = bancoDados.compileStatement(sql);
+
+                stmt.bindLong(1, produtoId);
+                stmt.bindLong(2, listaId);
                 stmt.executeInsert();
+
+                bancoDados.close();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -71,8 +105,14 @@ public class ListaCompras extends AppCompatActivity {
             }
 
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
+    }
+
+    public void salvarListaButton(View v) {
+        adcionarNovaLista();
+        startActivity(new Intent(this, MainActivity.class));
+
     }
 
 }

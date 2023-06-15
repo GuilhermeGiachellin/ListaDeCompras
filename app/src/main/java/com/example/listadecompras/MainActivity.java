@@ -7,7 +7,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -26,6 +28,14 @@ public class MainActivity extends AppCompatActivity {
         criarBancoDados();
         //inserirProdutos();
         listarListas();
+
+        listViewListas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                String nomeLista = (String) (listViewListas.getItemAtPosition(position));
+                Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position + " nome " + nomeLista);
+            }
+        });
     }
 
     public void criarBancoDados() {
@@ -90,28 +100,38 @@ public class MainActivity extends AppCompatActivity {
     public void listarListas() {
         try {
             bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
+            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM lista", null);
             ArrayList<String> linhasDados = new ArrayList<String>();
 
             ArrayAdapter adapterDados = new ArrayAdapter<String>(
-                this,
+                    this,
                     android.R.layout.simple_list_item_1,
                     android.R.id.text1,
                     linhasDados
             );
 
-            listViewListas.setAdapter(adapterDados);
-            meuCursor.moveToFirst();
-            while(meuCursor != null) {
-                linhasDados.add(meuCursor.getString(1));
-                meuCursor.moveToNext();
-            }
+            //if(meuCursor != null) {
+                listViewListas.setAdapter(adapterDados);
+                meuCursor.moveToFirst();
+                while(meuCursor != null) {
+                    linhasDados.add(meuCursor.getString(1));
+                    meuCursor.moveToNext();
+                }
+
+            //} else {
+                linhasDados.add("Não a listas criadas");
+
+            //}
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     public void novaListaButton(View v) {
         startActivity(new Intent(this, ListaCompras.class));
     }
+
+
+
+
 }
