@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase bancoDados;
     private ListView listViewListas;
+    private ArrayList<Integer> arrayIds;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,11 +34,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 String nomeLista = (String) (listViewListas.getItemAtPosition(position));
-                Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position + " nome " + nomeLista);
+                //ENVIA O NOME DA LISTA SELECIONADA NO ITENT
+                irParaLista(nomeLista, position);
             }
         });
     }
-
     public void criarBancoDados() {
         try {
             bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
@@ -99,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void listarListas() {
         try {
+            arrayIds = new ArrayList<>();
             bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
             Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM lista", null);
             ArrayList<String> linhasDados = new ArrayList<String>();
@@ -115,11 +117,12 @@ public class MainActivity extends AppCompatActivity {
                 meuCursor.moveToFirst();
                 while(meuCursor != null) {
                     linhasDados.add(meuCursor.getString(1));
+                    arrayIds.add(meuCursor.getInt(0));
                     meuCursor.moveToNext();
                 }
 
             //} else {
-                linhasDados.add("Não a listas criadas");
+//                linhasDados.add("Não a listas criadas");
 
             //}
 
@@ -127,11 +130,16 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    public void novaListaButton(View v) {
-        startActivity(new Intent(this, ListaCompras.class));
+
+
+    public void irParaLista(String nomeLista, int posicao) {
+        Intent intent = new Intent(this, ListaCompras.class);
+        intent.putExtra("nomeLista", nomeLista);
+        intent.putExtra("listaId", arrayIds.get(posicao));
+        startActivity(intent);
     }
-
-
-
+    public void novaListaButton(View v) {
+        startActivity(new Intent(this, CadastrarLista.class));
+    }
 
 }

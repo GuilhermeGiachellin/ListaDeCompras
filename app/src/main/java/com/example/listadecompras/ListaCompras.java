@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,8 +21,10 @@ import java.util.Calendar;
 public class ListaCompras extends AppCompatActivity {
 
     private SQLiteDatabase bancoDados;
+    private TextView textViewNome;
     private ListView listViewProdutos;
-    private EditText editTextNomeLista;
+
+    private String nomeLista;
     private String produtoSelecionado;
     private long produtoId, listaId;
     @Override
@@ -30,10 +33,15 @@ public class ListaCompras extends AppCompatActivity {
         setContentView(R.layout.activity_lista_compras);
 
         listViewProdutos = (ListView) this.findViewById(R.id.listViewProdutos);
-        editTextNomeLista = (EditText) this.findViewById(R.id.editTextNomeLista);
+        textViewNome = (TextView) this.findViewById(R.id.textViewNome);
 
+        Bundle bundle = getIntent().getExtras();
+        nomeLista = bundle.getString("nomeLista");
+        listaId = bundle.getInt("listaId");
+        textViewNome.setText(nomeLista);
+
+        Log.i("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", " " + listaId);
         listarProdutos();
-
         listViewProdutos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -42,85 +50,100 @@ public class ListaCompras extends AppCompatActivity {
         });
     }
 
-    public void adcionarNovaLista() {
-        if(editTextNomeLista.getText().toString().trim().equals("")) {
-            Uteis.Alert(this, "Nome da lista é obrigatório");
-            editTextNomeLista.requestFocus();
-
-        } else if(produtoSelecionado.isEmpty()) {
-            Uteis.Alert(this, "Selecione um produto");
-
-        } else {
+    public void listarProdutos() {
             try {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-
-
-                String sql = "INSERT INTO lista (nome, data) VALUES(?, ?)";
-                SQLiteStatement stmt = bancoDados.compileStatement(sql);
-
-                stmt.bindString(1, editTextNomeLista.getText().toString());
-                stmt.bindString(2, String.valueOf(Calendar.getInstance().getTime()));
-                //EXECUTA INSERT E PEGA A ID DA NOVA LISTA
-                listaId = stmt.executeInsert();
-
-                sql = "SELECT id FROM produto WHERE nome = ?";
-                stmt = bancoDados.compileStatement(sql);
-                stmt.bindString(1, produtoSelecionado);
-                //PEGA A ID DO PRODUTO SELECIONADO
-                produtoId = stmt.executeInsert();
-
-                //INSERE NA TABELA DE LIGACAO
-                sql = "INSERT INTO listaComprasProdutos (produto_id, lista_id) VALUES(?, ?)";
-                stmt = bancoDados.compileStatement(sql);
-
-                stmt.bindLong(1, produtoId);
-                stmt.bindLong(2, listaId);
-                stmt.executeInsert();
+                Cursor meuCursor = bancoDados.rawQuery("SELECT id FROM listaComprasProdutos WHERE lista_id = '"+listaId+"'", null);
+                meuCursor.moveToFirst();
+                Log.i("KRAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", " " + meuCursor.getString(0));
+                //PEGA PRODUTOS RELACIONADOS A LISTA
+//                Cursor meuCursor = bancoDados.rawQuery("SELECT nome FROM produto INNER JOIN listaComprasProdutos ON lista_id = ?", new String[]{String.valueOf(listaId)});
+//                ArrayList<String> linhasDados = new ArrayList<String>();
+//
+//                ArrayAdapter adapterDados = new ArrayAdapter<String>(
+//                        this,
+//                        android.R.layout.simple_list_item_1,
+//                        android.R.id.text1,
+//                        linhasDados
+//                );
+//
+//                listViewProdutos.setAdapter(adapterDados);
+//                meuCursor.moveToFirst();
+//                while(meuCursor != null) {
+//                    linhasDados.add(meuCursor.getString(0));
+//                    meuCursor.moveToNext();
+//                }
 
                 bancoDados.close();
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+
     }
 
-    public void listarProdutos() {
+    public  void voltarButton(View v) {
+        startActivity(new Intent(this, MainActivity.class));
+    }
+
+    public void deletarListaButton(View v) {
         try {
             bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
-            ArrayList<String> linhasDados = new ArrayList<String>();
 
-            ArrayAdapter adapterDados = new ArrayAdapter<String>(
-                    this,
-                    android.R.layout.simple_list_item_1,
-                    android.R.id.text1,
-                    linhasDados
-            );
+            String sql = "DELETE FROM lista WHERE id = ?";
+            SQLiteStatement stmt = bancoDados.compileStatement(sql);
+            stmt.bindLong(1, listaId);
+            stmt.executeUpdateDelete();
 
-            listViewProdutos.setAdapter(adapterDados);
-            meuCursor.moveToFirst();
-            while(meuCursor != null) {
-                linhasDados.add(meuCursor.getString(1));
-                meuCursor.moveToNext();
-            }
+            sql = "DELETE FROM listaComprasProdutos WHERE lista_id = ?";
+            stmt = bancoDados.compileStatement(sql);
+            stmt.bindLong(1, listaId);
+            stmt.executeUpdateDelete();
 
-        } catch (Exception e) {
+            bancoDados.close();
+
+            Uteis.Alert(this,"LISTA EXCLUIDA");
+            startActivity(new Intent(this, MainActivity.class));
+
+        }catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void salvarListaButton(View v) {
-        adcionarNovaLista();
-        Uteis.Alert(this,"LISTA SALVA");
-        limparCampos();
-        startActivity(new Intent(this, MainActivity.class));
+//    public void listarProdutos() {
+//        try {
+//            bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
+//            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
+//
+//
+//            ArrayList<String> linhasDados = new ArrayList<String>();
+//
+//            ArrayAdapter adapterDados = new ArrayAdapter<String>(
+//                    this,
+//                    android.R.layout.simple_list_item_1,
+//                    android.R.id.text1,
+//                    linhasDados
+//            );
+//
+//            listViewProdutos.setAdapter(adapterDados);
+//            meuCursor.moveToFirst();
+//            while(meuCursor != null) {
+//                linhasDados.add(meuCursor.getString(1));
+//                meuCursor.moveToNext();
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    }
-
-    public void limparCampos() {
-        produtoSelecionado = "";
-        editTextNomeLista.setText(null);
-    }
+//    public void salvarListaButton(View v) {
+//        adcionarNovaLista();
+//        Uteis.Alert(this,"LISTA SALVA");
+//        limparCampos();
+//        startActivity(new Intent(this, MainActivity.class));
+//
+//    }
+//
 
 }
