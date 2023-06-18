@@ -14,7 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -25,11 +27,12 @@ public class CadastrarLista extends AppCompatActivity {
     private EditText editTextNomeLista;
     private TextView valorTextView;
     private String produtoSelecionado;
-    private long produtoId, listaId;
-    private ArrayList<Integer> arrayIds;
-    private ArrayList<Long> arrayValor;
+    private long listaId;
+    private ArrayList<Long> arrayIds;
+    private ArrayList<Double> arrayValor = new ArrayList<>();
+    private ArrayList<Long> produtoIdArray = new ArrayList<>();
     private double valorTotal = 0.0;
-
+    private static final DecimalFormat df = new DecimalFormat("0.00");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,8 +48,8 @@ public class CadastrarLista extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 produtoSelecionado = (String) (listViewProdutos.getItemAtPosition(position));
-                produtoId = arrayIds.get(position);
-
+                produtoIdArray.add(arrayIds.get(position));
+                mensagemSelecao();
                 somaValor(position);
             }
         });
@@ -74,11 +77,15 @@ public class CadastrarLista extends AppCompatActivity {
                 listaId = stmt.executeInsert();
 
                 //INSERE NA TABELA DE LIGACAO
-                sql = "INSERT INTO listaComprasProdutos (produto_id, lista_id) VALUES(?, ?)";
-                stmt = bancoDados.compileStatement(sql);
+                for(int i = 0; i < produtoIdArray.size(); i++) {
+                    sql = "INSERT INTO listaComprasProdutos (produto_id, lista_id) VALUES(?, ?)";
+                    stmt = bancoDados.compileStatement(sql);
 
-                stmt.bindLong(1, produtoId);
-                stmt.bindLong(2, listaId);
+                    stmt.bindLong(1, produtoIdArray.get(i));
+                    stmt.bindLong(2, listaId);
+                    stmt.executeInsert();
+                }
+
                 bancoDados.close();
 
             } catch (Exception e) {
@@ -104,9 +111,9 @@ public class CadastrarLista extends AppCompatActivity {
             listViewProdutos.setAdapter(adapterDados);
             meuCursor.moveToFirst();
             while(meuCursor != null) {
-                arrayIds.add(meuCursor.getInt(0));
+                arrayIds.add(meuCursor.getLong(0));
                 linhasDados.add(meuCursor.getString(1));
-                arrayValor.add(meuCursor.getLong(2));
+                arrayValor.add(meuCursor.getDouble(2));
                 meuCursor.moveToNext();
             }
 
@@ -117,6 +124,8 @@ public class CadastrarLista extends AppCompatActivity {
 
     public void somaValor(int position) {
         valorTotal += arrayValor.get(position);
+        df.format(valorTotal);
+        valorTextView.setText(Double.toString(valorTotal));
     }
 
     public void salvarListaButton(View v) {
@@ -127,8 +136,15 @@ public class CadastrarLista extends AppCompatActivity {
 
     }
 
+    public void mensagemSelecao() {
+        Toast.makeText(this, produtoSelecionado + " Selecionado", Toast.LENGTH_LONG).show();
+    }
+
     public void limparCampos() {
         produtoSelecionado = "";
+        valorTotal = 0.0;
+        arrayValor.clear();
+        arrayIds.clear();
         editTextNomeLista.setText(null);
     }
 }

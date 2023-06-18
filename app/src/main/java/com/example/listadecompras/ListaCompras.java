@@ -52,9 +52,7 @@ public class ListaCompras extends AppCompatActivity {
     public void listarProdutos() {
             try {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-//                Cursor meuCursor = bancoDados.rawQuery("SELECT id FROM listaComprasProdutos WHERE lista_id = '"+listaId+"'", null);
-//                meuCursor.moveToFirst();
-//                Log.i("KRAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", " " + meuCursor.getString(0));
+
                 //PEGA PRODUTOS RELACIONADOS A LISTA
                 Cursor meuCursor = bancoDados.rawQuery("SELECT produto.nome FROM lista INNER JOIN listaComprasProdutos ON lista_id = lista.id INNER JOIN produto ON produto_id = produto.id WHERE lista.id = '"+listaId+"'", null);
                 ArrayList<String> linhasDados = new ArrayList<String>();

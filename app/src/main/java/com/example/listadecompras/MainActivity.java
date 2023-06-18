@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ListaCompras.class);
         intent.putExtra("nomeLista", nomeLista);
         intent.putExtra("listaId", arrayIds.get(posicao));
+        Log.i("IAURHIRUHIURHUIHR", "ANTES AKITIVITI " + arrayIds.get(posicao));
         startActivity(intent);
     }
     public void novaListaButton(View v) {
