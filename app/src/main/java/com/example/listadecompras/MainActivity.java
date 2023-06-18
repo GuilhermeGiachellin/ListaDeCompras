@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         listViewListas = (ListView) findViewById(R.id.listViewListas);
 
         criarBancoDados();
+        //COMENTA O INSERIR PRODUTOS DPS DA PRIMEIRA EXECUÇÃO PROFESSOR
         //inserirProdutos();
         listarListas();
 
@@ -112,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                     linhasDados
             );
 
-            //if(meuCursor != null) {
                 listViewListas.setAdapter(adapterDados);
                 meuCursor.moveToFirst();
                 while(meuCursor != null) {
@@ -121,10 +121,6 @@ public class MainActivity extends AppCompatActivity {
                     meuCursor.moveToNext();
                 }
 
-            //} else {
-//                linhasDados.add("Não a listas criadas");
-
-            //}
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -136,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ListaCompras.class);
         intent.putExtra("nomeLista", nomeLista);
         intent.putExtra("listaId", arrayIds.get(posicao));
-        Log.i("IAURHIRUHIURHUIHR", "ANTES AKITIVITI " + arrayIds.get(posicao));
         startActivity(intent);
     }
     public void novaListaButton(View v) {

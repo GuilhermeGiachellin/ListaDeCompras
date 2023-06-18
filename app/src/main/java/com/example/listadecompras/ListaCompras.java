@@ -25,8 +25,8 @@ public class ListaCompras extends AppCompatActivity {
     private ListView listViewProdutos;
 
     private String nomeLista;
-    private String produtoSelecionado;
-    private long produtoId, listaId;
+    private long listaId;
+    private ArrayList<Long> arrayIds = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +44,7 @@ public class ListaCompras extends AppCompatActivity {
         listViewProdutos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                produtoSelecionado = (String) (listViewProdutos.getItemAtPosition(position));
+                updateProdutoLista(position);
             }
         });
     }
@@ -54,7 +54,7 @@ public class ListaCompras extends AppCompatActivity {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
 
                 //PEGA PRODUTOS RELACIONADOS A LISTA
-                Cursor meuCursor = bancoDados.rawQuery("SELECT produto.nome FROM lista INNER JOIN listaComprasProdutos ON lista_id = lista.id INNER JOIN produto ON produto_id = produto.id WHERE lista.id = '"+listaId+"'", null);
+                Cursor meuCursor = bancoDados.rawQuery("SELECT produto.nome, produto.id FROM lista INNER JOIN listaComprasProdutos ON lista_id = lista.id INNER JOIN produto ON produto_id = produto.id WHERE lista.id = '"+listaId+"'", null);
                 ArrayList<String> linhasDados = new ArrayList<String>();
 
                 ArrayAdapter adapterDados = new ArrayAdapter<String>(
@@ -68,6 +68,7 @@ public class ListaCompras extends AppCompatActivity {
                 meuCursor.moveToFirst();
                 while(meuCursor != null) {
                     linhasDados.add(meuCursor.getString(0));
+                    arrayIds.add(meuCursor.getLong(1));
                     meuCursor.moveToNext();
                 }
 
@@ -107,40 +108,11 @@ public class ListaCompras extends AppCompatActivity {
         }
     }
 
-//    public void listarProdutos() {
-//        try {
-//            bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-//            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
-//
-//
-//            ArrayList<String> linhasDados = new ArrayList<String>();
-//
-//            ArrayAdapter adapterDados = new ArrayAdapter<String>(
-//                    this,
-//                    android.R.layout.simple_list_item_1,
-//                    android.R.id.text1,
-//                    linhasDados
-//            );
-//
-//            listViewProdutos.setAdapter(adapterDados);
-//            meuCursor.moveToFirst();
-//            while(meuCursor != null) {
-//                linhasDados.add(meuCursor.getString(1));
-//                meuCursor.moveToNext();
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    public void salvarListaButton(View v) {
-//        adcionarNovaLista();
-//        Uteis.Alert(this,"LISTA SALVA");
-//        limparCampos();
-//        startActivity(new Intent(this, MainActivity.class));
-//
-//    }
-//
+    public void updateProdutoLista(int position) {
+        Intent intent = new Intent(this, UpdateLista.class);
+        intent.putExtra("listaId", listaId);
+        intent.putExtra("produtoId", arrayIds.get(position));
+        startActivity(intent);
+    }
 
 }

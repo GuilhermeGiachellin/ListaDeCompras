@@ -117,6 +117,7 @@ public class CadastrarLista extends AppCompatActivity {
                 meuCursor.moveToNext();
             }
 
+            bancoDados.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
