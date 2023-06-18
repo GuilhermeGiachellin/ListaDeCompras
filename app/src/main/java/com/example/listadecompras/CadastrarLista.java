@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,9 +23,12 @@ public class CadastrarLista extends AppCompatActivity {
     private SQLiteDatabase bancoDados;
     private ListView listViewProdutos;
     private EditText editTextNomeLista;
+    private TextView valorTextView;
     private String produtoSelecionado;
     private long produtoId, listaId;
     private ArrayList<Integer> arrayIds;
+    private ArrayList<Long> arrayValor;
+    private double valorTotal = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +37,8 @@ public class CadastrarLista extends AppCompatActivity {
 
         listViewProdutos = (ListView) this.findViewById(R.id.listViewProdutos);
         editTextNomeLista = (EditText) this.findViewById(R.id.editTextNomeLista);
-
+        valorTextView = (TextView) this.findViewById(R.id.valorTextView);
+        valorTextView.setText(Double.toString(valorTotal));
         listarProdutos();
 
         listViewProdutos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -41,6 +46,8 @@ public class CadastrarLista extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 produtoSelecionado = (String) (listViewProdutos.getItemAtPosition(position));
                 produtoId = arrayIds.get(position);
+
+                somaValor(position);
             }
         });
     }
@@ -72,8 +79,6 @@ public class CadastrarLista extends AppCompatActivity {
 
                 stmt.bindLong(1, produtoId);
                 stmt.bindLong(2, listaId);
-                long teste = stmt.executeInsert();
-                Log.i("IAUHFSIAUDHAIUSHDAUHS", "" + teste);
                 bancoDados.close();
 
             } catch (Exception e) {
@@ -86,7 +91,7 @@ public class CadastrarLista extends AppCompatActivity {
         try {
             arrayIds = new ArrayList<>();
             bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome FROM produto", null);
+            Cursor meuCursor = bancoDados.rawQuery("SELECT id, nome, valor FROM produto", null);
             ArrayList<String> linhasDados = new ArrayList<String>();
 
             ArrayAdapter adapterDados = new ArrayAdapter<String>(
@@ -101,12 +106,17 @@ public class CadastrarLista extends AppCompatActivity {
             while(meuCursor != null) {
                 arrayIds.add(meuCursor.getInt(0));
                 linhasDados.add(meuCursor.getString(1));
+                arrayValor.add(meuCursor.getLong(2));
                 meuCursor.moveToNext();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void somaValor(int position) {
+        valorTotal += arrayValor.get(position);
     }
 
     public void salvarListaButton(View v) {

@@ -40,7 +40,6 @@ public class ListaCompras extends AppCompatActivity {
         listaId = bundle.getInt("listaId");
         textViewNome.setText(nomeLista);
 
-        Log.i("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", " " + listaId);
         listarProdutos();
         listViewProdutos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -53,26 +52,26 @@ public class ListaCompras extends AppCompatActivity {
     public void listarProdutos() {
             try {
                 bancoDados = openOrCreateDatabase("listaDeComprasDb", MODE_PRIVATE, null);
-                Cursor meuCursor = bancoDados.rawQuery("SELECT id FROM listaComprasProdutos WHERE lista_id = '"+listaId+"'", null);
-                meuCursor.moveToFirst();
-                Log.i("KRAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", " " + meuCursor.getString(0));
-                //PEGA PRODUTOS RELACIONADOS A LISTA
-//                Cursor meuCursor = bancoDados.rawQuery("SELECT nome FROM produto INNER JOIN listaComprasProdutos ON lista_id = ?", new String[]{String.valueOf(listaId)});
-//                ArrayList<String> linhasDados = new ArrayList<String>();
-//
-//                ArrayAdapter adapterDados = new ArrayAdapter<String>(
-//                        this,
-//                        android.R.layout.simple_list_item_1,
-//                        android.R.id.text1,
-//                        linhasDados
-//                );
-//
-//                listViewProdutos.setAdapter(adapterDados);
+//                Cursor meuCursor = bancoDados.rawQuery("SELECT id FROM listaComprasProdutos WHERE lista_id = '"+listaId+"'", null);
 //                meuCursor.moveToFirst();
-//                while(meuCursor != null) {
-//                    linhasDados.add(meuCursor.getString(0));
-//                    meuCursor.moveToNext();
-//                }
+//                Log.i("KRAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", " " + meuCursor.getString(0));
+                //PEGA PRODUTOS RELACIONADOS A LISTA
+                Cursor meuCursor = bancoDados.rawQuery("SELECT produto.nome FROM lista INNER JOIN listaComprasProdutos ON lista_id = lista.id INNER JOIN produto ON produto_id = produto.id WHERE lista.id = '"+listaId+"'", null);
+                ArrayList<String> linhasDados = new ArrayList<String>();
+
+                ArrayAdapter adapterDados = new ArrayAdapter<String>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        android.R.id.text1,
+                        linhasDados
+                );
+
+                listViewProdutos.setAdapter(adapterDados);
+                meuCursor.moveToFirst();
+                while(meuCursor != null) {
+                    linhasDados.add(meuCursor.getString(0));
+                    meuCursor.moveToNext();
+                }
 
                 bancoDados.close();
 
